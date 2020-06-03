@@ -12,12 +12,23 @@ from sklearn.cluster import DBSCAN
 from sklearn import metrics
 from scipy.spatial import ConvexHull, convex_hull_plot_2d
 
-fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(5, 3))
+
+fig = plt.figure(figsize=(5, 3))
+
+ax1 = fig.add_subplot(2, 2, 1)
+ax1.set_title("6 Priors")
+ax2 = fig.add_subplot(2, 2, 2)
+ax2.set_title("2 Priors")
+ax3 = fig.add_subplot(2, 1, 2)
+ax3.set_title("Kitti Image(Front Cam)")
+
+# fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(5, 3))
 ax1.set(xlim=(-3, 50), ylim=(-50, 50))
+ax2.set(xlim=(-3, 50), ylim=(-50, 50))
 
 drive_path = "/home/tarang/Lidar_Project_Fall_2019_Tarang/data/kitti_data/"
-# drive_id = "2011_09_26_drive_0005_sync"
-drive_id = "2011_09_26_drive_0051_sync"
+drive_id = "2011_09_26_drive_0005_sync"
+# drive_id = "2011_09_26_drive_0051_sync"
 image_path = "image_00/data/"
 
 
@@ -263,9 +274,6 @@ def merge_boundaries(boundaries):
     return upper_boundaries + lower_boundaries
 
 
-# In[15]:
-
-
 # visualize multiple frames
 def detect_in_frame(filename, mode="6priors"):
     print(filename)
@@ -302,12 +310,19 @@ num_frames = len(glob.glob(folder + "*.png"))
 #     detect_in_frame(filename)
 
 # ax.subplot(211)
-scat = ax1.scatter([], [], s=5)
+scat6 = ax1.scatter([], [], s=5)
 
-line = []
+line6 = []
 
 for i in range(6):
-    line.append(ax1.plot([], [], lw=1)[0])
+    line6.append(ax1.plot([], [], lw=1)[0])
+
+scat2 = ax2.scatter([], [], s=5)
+
+line2 = []
+
+for i in range(2):
+    line2.append(ax2.plot([], [], lw=1)[0])
 
 # ax.subplot(212)
 # line1 = ax.plot([], [], lw=1)[0]
@@ -325,27 +340,38 @@ def get_image(id):
     # img =
 
 
-img = ax2.imshow(get_image(0))
+img = ax3.imshow(get_image(0))
 
 
 def init():
-    scat.set_offsets([])
-    return (scat,)
+    scat6.set_offsets([])
+    scat2.set_offsets([])
+
+    return (scat6,)
 
 
 def animate(i):
     filename = f"../{drive_id}_vscan/frame_{frame_offset+i}.csv"
-    priors, boundaries = detect_in_frame(filename, mode="2priors")
-    scat.set_offsets(priors)
+    priors6, boundaries6 = detect_in_frame(filename, mode="6priors")
+    scat6.set_offsets(priors6)
+    priors2, boundaries2 = detect_in_frame(filename, mode="2priors")
+    scat2.set_offsets(priors2)
     for k in range(6):
-        if k < len(boundaries):
-            line[k].set_xdata(boundaries[k][:, 0])
-            line[k].set_ydata(boundaries[k][:, 1])
+        if k < len(boundaries6):
+            line6[k].set_xdata(boundaries6[k][:, 0])
+            line6[k].set_ydata(boundaries6[k][:, 1])
         else:
-            line[k].set_xdata([])
-            line[k].set_ydata([])
+            line6[k].set_xdata([])
+            line6[k].set_ydata([])
+    for m in range(2):
+        # if m < len(boundaries2):
+        line2[m].set_xdata(boundaries2[m][:, 0])
+        line2[m].set_ydata(boundaries2[m][:, 1])
+    # else:
+    #     line2[m].set_xdata([])
+    #     line2[m].set_ydata([])
     img.set_array(get_image(i))
-    return (scat,)
+    return (scat6,)
 
 
 anim = FuncAnimation(
